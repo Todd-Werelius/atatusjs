@@ -1,4 +1,4 @@
-# Atatus4js
+# Atatusjs
 
 Atatus plugin for JavaScript
 
