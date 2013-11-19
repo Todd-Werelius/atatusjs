@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2013-11-18
+/*! AtatusJs - v1.3.0 - 2013-11-19
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2013 MindscapeHQ, Atatus; Licensed MIT */
 (function traceKitAsyncForjQuery($, TraceKit) {
@@ -279,7 +279,7 @@
       return;
     }
     log('Sending exception data to Atatus:', data);
-    var url = 'https://http://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
+    var url = 'https://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 

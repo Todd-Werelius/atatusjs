@@ -227,7 +227,7 @@
       return;
     }
     log('Sending exception data to Atatus:', data);
-    var url = 'https://http://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
+    var url = 'https://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
