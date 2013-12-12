@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2013-11-19
+/*! AtatusJs - v1.3.0 - 2013-12-12
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2013 MindscapeHQ, Atatus; Licensed MIT */
 (function(window, undefined) {
@@ -1181,8 +1181,8 @@ window.TraceKit = TraceKit;
     $document = $(document);
   }
 
-  var Atatus =
-  {
+  var Atatus = {
+
     noConflict: function () {
       window.Atatus = _atatus;
       return Atatus;
@@ -1248,6 +1248,20 @@ window.TraceKit = TraceKit;
     setVersion: function (version) {
       _version = version;
       return Atatus;
+    },
+
+    track: function(message, metadata, params) {
+        if (!message) {
+            return;
+        }
+
+        var payload = {
+          'OccurredOn': new Date(),
+          'Message': message,
+          'Metadata': metadata,
+          'Parameters': params
+        };
+        sendToAtatus(payload, 'track');
     }
   };
 
@@ -1379,15 +1393,15 @@ window.TraceKit = TraceKit;
     if (_user) {
       payload.Details.User = _user;
     }
-    sendToAtatus(payload);
+    sendToAtatus(payload, 'exception');
   }
 
-  function sendToAtatus(data) {
+  function sendToAtatus(data, type) {
     if (!isApiKeyConfigured()) {
       return;
     }
-    log('Sending exception data to Atatus:', data);
-    var url = 'https://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
+    log('Sending data to Atatus:', data);
+    var url = 'http://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 

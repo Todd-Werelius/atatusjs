@@ -21,8 +21,8 @@
     $document = $(document);
   }
 
-  var Atatus =
-  {
+  var Atatus = {
+
     noConflict: function () {
       window.Atatus = _atatus;
       return Atatus;
@@ -88,6 +88,20 @@
     setVersion: function (version) {
       _version = version;
       return Atatus;
+    },
+
+    track: function(message, metadata, params) {
+        if (!message) {
+            return;
+        }
+
+        var payload = {
+          'OccurredOn': new Date(),
+          'Message': message,
+          'Metadata': metadata,
+          'Parameters': params
+        };
+        sendToAtatus(payload, 'track');
     }
   };
 
@@ -219,15 +233,15 @@
     if (_user) {
       payload.Details.User = _user;
     }
-    sendToAtatus(payload);
+    sendToAtatus(payload, 'exception');
   }
 
-  function sendToAtatus(data) {
+  function sendToAtatus(data, type) {
     if (!isApiKeyConfigured()) {
       return;
     }
-    log('Sending exception data to Atatus:', data);
-    var url = 'https://gcdc2013-atatus.appspot.com/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
+    log('Sending data to Atatus:', data);
+    var url = 'http://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
