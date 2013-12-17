@@ -102,6 +102,22 @@
           'Parameters': params
         };
         sendToAtatus(payload, 'track');
+    },
+
+    log: function(message, metadata) {
+        sendLog(message, metadata, 'info');
+    },
+    info: function(message, metadata) {
+        sendLog(message, metadata, 'info');
+    },
+    debug: function(message, metadata) {
+        sendLog(message, metadata, 'debug');
+    },
+    warn: function(message, metadata) {
+        sendLog(message, metadata, 'warn');
+    },
+    error: function(message, metadata) {
+        sendLog(message, metadata, 'error');
     }
   };
 
@@ -234,6 +250,20 @@
       payload.Details.User = _user;
     }
     sendToAtatus(payload, 'exception');
+  }
+
+  function sendLog(message, metadata, type) {
+    if (!message) {
+        return;
+    }
+
+    var payload = {
+      'OccurredOn': new Date(),
+      'Message': message,
+      'Metadata': metadata,
+      'Type': type
+    };
+    sendToAtatus(payload, 'log');
   }
 
   function sendToAtatus(data, type) {
