@@ -105,19 +105,19 @@
     },
 
     log: function(message, metadata) {
-        sendLog(message, metadata, 'info');
+        sendLog(message, metadata, 'INFO');
     },
     info: function(message, metadata) {
-        sendLog(message, metadata, 'info');
+        sendLog(message, metadata, 'INFO');
     },
     debug: function(message, metadata) {
-        sendLog(message, metadata, 'debug');
+        sendLog(message, metadata, 'DEBUG');
     },
     warn: function(message, metadata) {
-        sendLog(message, metadata, 'warn');
+        sendLog(message, metadata, 'WARN');
     },
     error: function(message, metadata) {
-        sendLog(message, metadata, 'error');
+        sendLog(message, metadata, 'ERROR');
     }
   };
 
