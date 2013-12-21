@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2013-12-17
+/*! AtatusJs - v1.3.0 - 2013-12-21
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2013 MindscapeHQ, Atatus; Licensed MIT */
 (function(window, undefined) {
@@ -1169,7 +1169,7 @@ window.TraceKit = TraceKit;
 (function (window, $) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
-      _atatus = window.Atatus,
+      _atatus = window.atatus,
       _atatusApiKey,
       _debugMode = false,
       _customData = {},
@@ -1181,11 +1181,11 @@ window.TraceKit = TraceKit;
     $document = $(document);
   }
 
-  var Atatus = {
+  var atatus = {
 
     noConflict: function () {
-      window.Atatus = _atatus;
-      return Atatus;
+      window.atatus = _atatus;
+      return atatus;
     },
 
     init: function(key, options, customdata) {
@@ -1201,12 +1201,12 @@ window.TraceKit = TraceKit;
         }
       }
 
-      return Atatus;
+      return atatus;
     },
 
     withCustomData: function (customdata) {
       _customData = customdata;
-      return Atatus;
+      return atatus;
     },
 
     attach: function () {
@@ -1217,7 +1217,7 @@ window.TraceKit = TraceKit;
       if ($document) {
         $document.ajaxError(processJQueryAjaxError);
       }
-      return Atatus;
+      return atatus;
     },
 
     detach: function () {
@@ -1225,7 +1225,7 @@ window.TraceKit = TraceKit;
       if ($document) {
         $document.unbind('ajaxError', processJQueryAjaxError);
       }
-      return Atatus;
+      return atatus;
     },
 
     send: function (ex, customData) {
@@ -1237,17 +1237,17 @@ window.TraceKit = TraceKit;
           throw traceKitException;
         }
       }
-      return Atatus;
+      return atatus;
     },
 
     setUser: function (user) {
       _user = { 'Identifier': user };
-      return Atatus;
+      return atatus;
     },
 
     setVersion: function (version) {
       _version = version;
-      return Atatus;
+      return atatus;
     },
 
     track: function(message, metadata, params) {
@@ -1284,7 +1284,7 @@ window.TraceKit = TraceKit;
   /* internals */
 
   function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
-    Atatus.send(thrownError || event.type, {
+    atatus.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
@@ -1302,7 +1302,7 @@ window.TraceKit = TraceKit;
     if (_atatusApiKey && _atatusApiKey !== '') {
       return true;
     }
-    log("Atatus API key has not been configured, make sure you call Atatus.init(yourApiKey)");
+    log("Atatus API key has not been configured, make sure you call atatus.init(yourApiKey)");
     return false;
   }
 
@@ -1470,5 +1470,5 @@ window.TraceKit = TraceKit;
     xhr.send(data);
   }
 
-  window.Atatus = Atatus;
+  window.atatus = atatus;
 })(window, window.jQuery);
