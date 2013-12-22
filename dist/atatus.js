@@ -1,6 +1,6 @@
-/*! AtatusJs - v1.3.0 - 2013-12-21
+/*! AtatusJs - v1.3.0 - 2013-12-22
 * https://github.com/fizerkhan/atatusjs
-* Copyright (c) 2013 MindscapeHQ, Atatus; Licensed MIT */
+* Copyright (c) 2013 Atatus; Licensed MIT */
 (function(window, undefined) {
 
 
