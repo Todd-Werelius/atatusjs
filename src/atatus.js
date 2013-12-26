@@ -6,19 +6,24 @@
  * Licensed under the MIT license.
  */
 
-(function (window, $) {
+(function (window, $, UAParser) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
       _atatus = window.atatus,
       _atatusApiKey,
       _debugMode = false,
       _customData = {},
+      _userAgent = {},
       _user,
       _version,
       $document;
 
   if ($) {
     $document = $(document);
+  }
+
+  if (UAParser) {
+    _userAgent = new UAParser().getResult();
   }
 
   var atatus = {
@@ -90,35 +95,26 @@
       return atatus;
     },
 
-    track: function(message, metadata, params) {
-        if (!message) {
-            return;
-        }
-
-        var payload = {
-          'OccurredOn': new Date(),
-          'Message': message,
-          'Metadata': metadata,
-          'Parameters': params
-        };
-        sendToAtatus(payload, 'track');
-    },
-
-    log: function(message, metadata) {
-        sendLog(message, metadata, 'INFO');
-    },
-    info: function(message, metadata) {
-        sendLog(message, metadata, 'INFO');
-    },
-    debug: function(message, metadata) {
-        sendLog(message, metadata, 'DEBUG');
-    },
-    warn: function(message, metadata) {
-        sendLog(message, metadata, 'WARN');
-    },
-    error: function(message, metadata) {
-        sendLog(message, metadata, 'ERROR');
+    track: function(name, properties) {
+      if (!name) {
+        return;
+      }
+      processTrack(name, properties);
     }
+
+    // trackLink: function(links, name, properties) {
+    //   if (!name) {
+    //     return;
+    //   }
+    //   processTrack(name, properties);
+    // },
+
+    // trackForm: function(forms, name, properties) {
+    //   if (!name) {
+    //     return;
+    //   }
+    //   processTrack(name, properties);
+    // },
   };
 
   /* internals */
@@ -177,28 +173,31 @@
   }
 
   function processUnhandledException(stackTrace, options) {
-    var stack = [],
-        qs = {};
+    var stack = [];
 
+
+    // Create stack trace array
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
-          'LineNumber': frame.line,
-          'ClassName': 'line ' + frame.line + ', column ' + frame.column,
-          'FileName': frame.url,
-          'MethodName': frame.func || '[anonymous]'
+          'linenumber': frame.line,
+          'classname': 'line ' + frame.line + ', column ' + frame.column,
+          'filename': frame.url,
+          'methodname': frame.func || '[anonymous]'
         });
       });
     }
 
-    if (window.location.search && window.location.search.length > 1) {
-      forEach(window.location.search.substring(1).split('&'), function (i, segment) {
-        var parts = segment.split('=');
-        if (parts && parts.length === 2) {
-          qs[decodeURIComponent(parts[0])] = parts[1];
-        }
-      });
-    }
+    // Create search query object
+    // var qs = {};
+    // if (window.location.search && window.location.search.length > 1) {
+    //   forEach(window.location.search.substring(1).split('&'), function (i, segment) {
+    //     var parts = segment.split('=');
+    //     if (parts && parts.length === 2) {
+    //       qs[decodeURIComponent(parts[0])] = parts[1];
+    //     }
+    //   });
+    // }
 
     if (isEmpty(options)) {
       options = _customData;
@@ -207,61 +206,51 @@
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
     var payload = {
-      'OccurredOn': new Date(),
-      'Details': {
-        'Error': {
-          'ClassName': stackTrace.name,
-          'Message': stackTrace.message || 'Script error',
-          'StackTrace': stack
+      'occurred_on': new Date(),
+      'details': {
+        'error': {
+          'classname': stackTrace.name,
+          'message': stackTrace.message || 'Script error',
+          'stacktrace': stack
         },
-        'Environment': {
-          'UtcOffset': new Date().getTimezoneOffset() / -60.0,
-          'User-Language': navigator.userLanguage,
-          'Document-Mode': document.documentMode,
-          'Browser-Width': getViewPort().width,
-          'Browser-Height': getViewPort().height,
-          'Screen-Width': screen.width,
-          'Screen-Height': screen.height,
-          'Color-Depth': screen.colorDepth,
-          'Browser': navigator.appCodeName,
-          'Browser-Name': navigator.appName,
-          'Browser-Version': navigator.appVersion,
-          'Platform': navigator.platform
+        'environment': {
+          'user_language': navigator.userLanguage,
+          'document_mode': document.documentMode,
+          'browser_width': getViewPort().width,
+          'browser_height': getViewPort().height,
+          'screen_width': screen.width,
+          'screen_height': screen.height,
+          'color_depth': screen.colorDepth,
+          'user_agent': _userAgent,
+          'url': document.location.href,
+          'referrer': document.referrer,
+          'host': document.domain,
+          'query_string': window.location.search
         },
-        'Client': {
-          'Name': 'atatus-js',
-          'Version': '1.2.1'
+        'client': {
+          'name': 'atatus-js',
+          'version': '1.2.1'
         },
-        'UserCustomData': options,
-        'Request': {
-          'Url': document.location.href,
-          'QueryString': qs,
-          'Headers': {
-            'User-Agent': navigator.userAgent,
-            'Referer': document.referrer,
-            'Host': document.domain
-          }
-        },
-        'Version': _version || 'Not supplied'
+        'user_custom_data': options,
+        'version': _version || 'Not supplied'
       }
     };
 
     if (_user) {
-      payload.Details.User = _user;
+      payload.details.user = _user;
     }
     sendToAtatus(payload, 'exception');
   }
 
-  function sendLog(message, metadata, type) {
-    if (!message) {
-        return;
-    }
-
+  function processTrack(name, properties) {
     var payload = {
-      'OccurredOn': new Date(),
-      'Message': message,
-      'Metadata': metadata,
-      'Type': type
+      'event': name,
+      'properties': properties,
+      '$properties': {
+        'browser': window.navigator.userAgent,
+        'referrer': document.referrer,
+        'host': document.domain
+      }
     };
     sendToAtatus(payload, 'log');
   }
@@ -311,4 +300,4 @@
   }
 
   window.atatus = atatus;
-})(window, window.jQuery);
+})(window, window.jQuery, window.UAParser);

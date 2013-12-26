@@ -1,3 +1,6 @@
 [submodule "libs/tracekit"]
 	path = libs/tracekit
 	url = https://github.com/occ/TraceKit.git
+[submodule "libs/ua-parser-js"]
+	path = libs/ua-parser-js
+	url = https://github.com/faisalman/ua-parser-js.git
