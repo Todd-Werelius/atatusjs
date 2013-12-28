@@ -1880,7 +1880,7 @@ window.TraceKit = TraceKit;
 
   function processUnhandledException(stackTrace, options) {
     var stack = [],
-        message = 'Script error';
+        message;
 
     // Create stack trace array
     if (stackTrace.stack && stackTrace.stack.length) {
@@ -1909,6 +1909,8 @@ window.TraceKit = TraceKit;
     // Firefox, Safari does not add this prefix.
     if (stackTrace.message && stackTrace.message.indexOf('Uncaught ') === 0) {
         message = stackTrace.message.substring(9);
+    } else {
+        message = stackTrace.message || 'Script error';
     }
 
     if (isEmpty(options)) {
