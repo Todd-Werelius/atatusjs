@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2013-12-26
+/*! AtatusJs - v1.3.0 - 2013-12-28
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2013 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
@@ -1879,8 +1879,8 @@ window.TraceKit = TraceKit;
   }
 
   function processUnhandledException(stackTrace, options) {
-    var stack = [];
-
+    var stack = [],
+        message = 'Script error';
 
     // Create stack trace array
     if (stackTrace.stack && stackTrace.stack.length) {
@@ -1905,6 +1905,12 @@ window.TraceKit = TraceKit;
     //   });
     // }
 
+    // Remove 'Uncaught ' from prefix. It happen only in Chrome, Opera
+    // Firefox, Safari does not add this prefix.
+    if (stackTrace.message && stackTrace.message.indexOf('Uncaught ') === 0) {
+        message = stackTrace.message.substring(9);
+    }
+
     if (isEmpty(options)) {
       options = _customData;
     }
@@ -1916,7 +1922,7 @@ window.TraceKit = TraceKit;
       'details': {
         'error': {
           'classname': stackTrace.name,
-          'message': stackTrace.message || 'Script error',
+          'message': message,
           'stacktrace': stack
         },
         'environment': {
