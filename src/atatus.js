@@ -12,6 +12,7 @@
       _atatus = window.atatus,
       _atatusApiKey,
       _debugMode = false,
+      _allowInsecureSubmissions = false,
       _customData = {},
       _userAgent = {},
       _user,
@@ -40,6 +41,7 @@
 
       if (options)
       {
+        _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -95,26 +97,12 @@
       return atatus;
     },
 
-    track: function(name, properties) {
+    captureEvent: function(name, properties) {
       if (!name) {
         return;
       }
-      processTrack(name, properties);
+      processEvent(name, properties);
     }
-
-    // trackLink: function(links, name, properties) {
-    //   if (!name) {
-    //     return;
-    //   }
-    //   processTrack(name, properties);
-    // },
-
-    // trackForm: function(forms, name, properties) {
-    //   if (!name) {
-    //     return;
-    //   }
-    //   processTrack(name, properties);
-    // },
   };
 
   /* internals */
@@ -125,7 +113,8 @@
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
-      contentType: ajaxSettings.contentType });
+      contentType: ajaxSettings.contentType,
+      data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
   function log(message) {
@@ -237,7 +226,7 @@
         },
         'client': {
           'name': 'atatus-js',
-          'version': '1.2.1'
+          'version': '1.0.0'
         },
         'user_custom_data': options,
         'version': _version || 'Not supplied'
@@ -250,14 +239,16 @@
     sendToAtatus(payload, 'exception');
   }
 
-  function processTrack(name, properties) {
+  function processEvent(name, properties) {
     var payload = {
       'event': name,
       'properties': properties,
       '$properties': {
-        'browser': window.navigator.userAgent,
+        'user_agent': _userAgent,
+        'url': document.location.href,
         'referrer': document.referrer,
-        'host': document.domain
+        'host': document.domain,
+        'query_string': window.location.search
       }
     };
     sendToAtatus(payload, 'log');
@@ -282,6 +273,12 @@
       xhr.open(method, url, true);
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
+      if (_allowInsecureSubmissions) {
+        // remove 'https:' and use relative protocol
+        // this allows IE8 to post messages when running
+        // on http
+        url = url.slice(6);
+      }
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
     }

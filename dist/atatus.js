@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2013-12-28
+/*! AtatusJs - v1.3.0 - 2013-12-29
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2013 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
@@ -1694,16 +1694,23 @@ window.TraceKit = TraceKit;
   };
 
   var _oldAjax = $.ajax;
-  $.ajax = function traceKitAjaxWrapper(s) {
+  $.ajax = function traceKitAjaxWrapper(url, options) {
+    if (typeof url === "object") {
+      options = url;
+      url = undefined;
+    }
+
+    options = options || {};
+
     var keys = ['complete', 'error', 'success'], key;
     while(key = keys.pop()) {
-      if ($.isFunction(s[key])) {
-        s[key] = TraceKit.wrap(s[key]);
+      if ($.isFunction(options[key])) {
+        options[key] = TraceKit.wrap(options[key]);
       }
     }
 
     try {
-      return _oldAjax.call(this, s);
+      return (url) ? _oldAjax.call(this, url, options) : _oldAjax.call(this, options);
     } catch (e) {
       TraceKit.report(e);
       throw e;
@@ -1718,6 +1725,7 @@ window.TraceKit = TraceKit;
       _atatus = window.atatus,
       _atatusApiKey,
       _debugMode = false,
+      _allowInsecureSubmissions = false,
       _customData = {},
       _userAgent = {},
       _user,
@@ -1746,6 +1754,7 @@ window.TraceKit = TraceKit;
 
       if (options)
       {
+        _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -1801,26 +1810,12 @@ window.TraceKit = TraceKit;
       return atatus;
     },
 
-    track: function(name, properties) {
+    captureEvent: function(name, properties) {
       if (!name) {
         return;
       }
-      processTrack(name, properties);
+      processEvent(name, properties);
     }
-
-    // trackLink: function(links, name, properties) {
-    //   if (!name) {
-    //     return;
-    //   }
-    //   processTrack(name, properties);
-    // },
-
-    // trackForm: function(forms, name, properties) {
-    //   if (!name) {
-    //     return;
-    //   }
-    //   processTrack(name, properties);
-    // },
   };
 
   /* internals */
@@ -1831,7 +1826,8 @@ window.TraceKit = TraceKit;
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
-      contentType: ajaxSettings.contentType });
+      contentType: ajaxSettings.contentType,
+      data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
   function log(message) {
@@ -1943,7 +1939,7 @@ window.TraceKit = TraceKit;
         },
         'client': {
           'name': 'atatus-js',
-          'version': '1.2.1'
+          'version': '1.0.0'
         },
         'user_custom_data': options,
         'version': _version || 'Not supplied'
@@ -1956,14 +1952,16 @@ window.TraceKit = TraceKit;
     sendToAtatus(payload, 'exception');
   }
 
-  function processTrack(name, properties) {
+  function processEvent(name, properties) {
     var payload = {
       'event': name,
       'properties': properties,
       '$properties': {
-        'browser': window.navigator.userAgent,
+        'user_agent': _userAgent,
+        'url': document.location.href,
         'referrer': document.referrer,
-        'host': document.domain
+        'host': document.domain,
+        'query_string': window.location.search
       }
     };
     sendToAtatus(payload, 'log');
@@ -1988,6 +1986,12 @@ window.TraceKit = TraceKit;
       xhr.open(method, url, true);
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
+      if (_allowInsecureSubmissions) {
+        // remove 'https:' and use relative protocol
+        // this allows IE8 to post messages when running
+        // on http
+        url = url.slice(6);
+      }
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
     }
