@@ -1,6 +1,6 @@
-/*! AtatusJs - v1.3.0 - 2013-12-29
+/*! AtatusJs - v1.3.0 - 2014-01-01
 * https://github.com/fizerkhan/atatusjs
-* Copyright (c) 2013 Atatus; Licensed MIT */
+* Copyright (c) 2014 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
 // Lightweight JavaScript-based User-Agent string parser
 // https://github.com/faisalman/ua-parser-js
@@ -1810,11 +1810,17 @@ window.TraceKit = TraceKit;
       return atatus;
     },
 
-    captureEvent: function(name, properties) {
-      if (!name) {
+    captureEvent: function(message, tags, data) {
+      if (!message) {
         return;
       }
-      processEvent(name, properties);
+
+      if (!tags || typeof tags !== 'string') {
+        // To avoid 0
+        tags = null;
+      }
+
+      processEvent(message, tags, data);
     }
   };
 
@@ -1952,17 +1958,19 @@ window.TraceKit = TraceKit;
     sendToAtatus(payload, 'exception');
   }
 
-  function processEvent(name, properties) {
+  function processEvent(message, tags, data) {
     var payload = {
-      'event': name,
-      'properties': properties,
-      '$properties': {
+      'message': message,
+      'tags': tags,
+      'data': data,
+      'environment': {
         'user_agent': _userAgent,
         'url': document.location.href,
         'referrer': document.referrer,
         'host': document.domain,
         'query_string': window.location.search
-      }
+      },
+      'occurred_on': new Date()
     };
     sendToAtatus(payload, 'log');
   }

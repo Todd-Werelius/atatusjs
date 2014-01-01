@@ -97,11 +97,17 @@
       return atatus;
     },
 
-    captureEvent: function(name, properties) {
-      if (!name) {
+    captureEvent: function(message, tags, data) {
+      if (!message) {
         return;
       }
-      processEvent(name, properties);
+
+      if (!tags || typeof tags !== 'string') {
+        // To avoid 0
+        tags = null;
+      }
+
+      processEvent(message, tags, data);
     }
   };
 
@@ -239,17 +245,19 @@
     sendToAtatus(payload, 'exception');
   }
 
-  function processEvent(name, properties) {
+  function processEvent(message, tags, data) {
     var payload = {
-      'event': name,
-      'properties': properties,
-      '$properties': {
+      'message': message,
+      'tags': tags,
+      'data': data,
+      'environment': {
         'user_agent': _userAgent,
         'url': document.location.href,
         'referrer': document.referrer,
         'host': document.domain,
         'query_string': window.location.search
-      }
+      },
+      'occurred_on': new Date()
     };
     sendToAtatus(payload, 'log');
   }
