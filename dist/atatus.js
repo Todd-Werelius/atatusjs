@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2014-01-01
+/*! AtatusJs - v1.3.0 - 2014-01-02
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2014 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
@@ -1980,7 +1980,7 @@ window.TraceKit = TraceKit;
       return;
     }
     log('Sending data to Atatus:', data);
-    var url = 'http://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
+    var url = 'https://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
