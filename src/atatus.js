@@ -267,7 +267,7 @@
       return;
     }
     log('Sending data to Atatus:', data);
-    var url = 'http://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
+    var url = 'https://www.atatus.com/api/entries/' + type + '?apikey=' + encodeURIComponent(_atatusApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
