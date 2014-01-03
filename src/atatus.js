@@ -14,10 +14,10 @@
       _userAgent = {},
       _debugMode = false,
       _allowInsecureSubmissions = false,
-      _excludeDomains = [],
       _customData = {},
       _user,
       _version,
+      _allowedDomains,
       $document;
 
   if ($) {
@@ -86,9 +86,9 @@
       return atatus;
     },
 
-    setExcludeDomains: function (domains) {
+    setAllowedDomains: function (domains) {
       if (Object.prototype.toString.call(domains) === '[object Array]') {
-        _excludeDomains = domains;
+        _allowedDomains = domains;
       }
       return atatus;
     },
@@ -253,14 +253,21 @@
 
   function processEvent(message, tags, data) {
     // Add user and version to tags
-    if (tags) {
-        if (_user) {
-            tags += ',' + _user;
-        }
-        if (_version) {
-            tags += ',' + _version;
-        }
+    if (_user) {
+      if (tags) {
+        tags += ',' + _user;
+      } else {
+        tags = _user;
+      }
     }
+    if (_version) {
+      if (tags) {
+        tags += ',' + _version;
+      } else {
+        tags = _version;
+      }
+    }
+
     var payload = {
       'message': message,
       'tags': tags,
@@ -278,8 +285,9 @@
   }
 
   function sendToAtatus(data, type) {
-    // Check for exclude domain
-    if (_excludeDomains.indexOf(location.origin) !== -1) {
+    // Check for allowed domain
+    if (_allowedDomains &&
+        _allowedDomains.indexOf(location.host) === -1) {
         return;
     }
     // Check for API key

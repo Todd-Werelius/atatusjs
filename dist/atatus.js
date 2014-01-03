@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2014-01-02
+/*! AtatusJs - v1.3.0 - 2014-01-03
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2014 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
@@ -1724,12 +1724,13 @@ window.TraceKit = TraceKit;
   var _traceKit = TraceKit.noConflict(),
       _atatus = window.atatus,
       _atatusApiKey,
+      _userAgent = {},
       _debugMode = false,
       _allowInsecureSubmissions = false,
       _customData = {},
-      _userAgent = {},
       _user,
       _version,
+      _allowedDomains,
       $document;
 
   if ($) {
@@ -1752,11 +1753,9 @@ window.TraceKit = TraceKit;
       _traceKit.remoteFetching = false;
       _customData = customdata;
 
-      if (options)
-      {
+      if (options) {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
-        if (options.debugMode)
-        {
+        if (options.debugMode) {
           _debugMode = options.debugMode;
         }
       }
@@ -1800,8 +1799,15 @@ window.TraceKit = TraceKit;
       return atatus;
     },
 
+    setAllowedDomains: function (domains) {
+      if (Object.prototype.toString.call(domains) === '[object Array]') {
+        _allowedDomains = domains;
+      }
+      return atatus;
+    },
+
     setUser: function (user) {
-      _user = { 'Identifier': user };
+      _user = user;
       return atatus;
     },
 
@@ -1959,6 +1965,22 @@ window.TraceKit = TraceKit;
   }
 
   function processEvent(message, tags, data) {
+    // Add user and version to tags
+    if (_user) {
+      if (tags) {
+        tags += ',' + _user;
+      } else {
+        tags = _user;
+      }
+    }
+    if (_version) {
+      if (tags) {
+        tags += ',' + _version;
+      } else {
+        tags = _version;
+      }
+    }
+
     var payload = {
       'message': message,
       'tags': tags,
@@ -1976,6 +1998,12 @@ window.TraceKit = TraceKit;
   }
 
   function sendToAtatus(data, type) {
+    // Check for allowed domain
+    if (_allowedDomains &&
+        _allowedDomains.indexOf(location.host) === -1) {
+        return;
+    }
+    // Check for API key
     if (!isApiKeyConfigured()) {
       return;
     }
