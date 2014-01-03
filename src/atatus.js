@@ -11,10 +11,11 @@
   var _traceKit = TraceKit.noConflict(),
       _atatus = window.atatus,
       _atatusApiKey,
+      _userAgent = {},
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _excludeDomains = [],
       _customData = {},
-      _userAgent = {},
       _user,
       _version,
       $document;
@@ -39,11 +40,9 @@
       _traceKit.remoteFetching = false;
       _customData = customdata;
 
-      if (options)
-      {
+      if (options) {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
-        if (options.debugMode)
-        {
+        if (options.debugMode) {
           _debugMode = options.debugMode;
         }
       }
@@ -87,8 +86,15 @@
       return atatus;
     },
 
+    setExcludeDomains: function (domains) {
+      if (Object.prototype.toString.call(domains) === '[object Array]') {
+        _excludeDomains = domains;
+      }
+      return atatus;
+    },
+
     setUser: function (user) {
-      _user = { 'Identifier': user };
+      _user = user;
       return atatus;
     },
 
@@ -246,6 +252,15 @@
   }
 
   function processEvent(message, tags, data) {
+    // Add user and version to tags
+    if (tags) {
+        if (_user) {
+            tags += ',' + _user;
+        }
+        if (_version) {
+            tags += ',' + _version;
+        }
+    }
     var payload = {
       'message': message,
       'tags': tags,
@@ -263,6 +278,11 @@
   }
 
   function sendToAtatus(data, type) {
+    // Check for exclude domain
+    if (_excludeDomains.indexOf(location.origin) !== -1) {
+        return;
+    }
+    // Check for API key
     if (!isApiKeyConfigured()) {
       return;
     }
