@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2014-01-03
+/*! AtatusJs - v1.3.0 - 2014-01-05
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2014 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
@@ -1894,9 +1894,9 @@ window.TraceKit = TraceKit;
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
-          'linenumber': frame.line,
+          'linenumber': frame.line || 0,
           'classname': 'line ' + frame.line + ', column ' + frame.column,
-          'filename': frame.url,
+          'filename': frame.url || 'anonymous',
           'methodname': frame.func || '[anonymous]'
         });
       });

@@ -181,9 +181,9 @@
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
-          'linenumber': frame.line,
+          'linenumber': frame.line || 0,
           'classname': 'line ' + frame.line + ', column ' + frame.column,
-          'filename': frame.url,
+          'filename': frame.url || 'anonymous',
           'methodname': frame.func || '[anonymous]'
         });
       });
