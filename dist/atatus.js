@@ -1,4 +1,4 @@
-/*! AtatusJs - v1.3.0 - 2014-01-05
+/*! AtatusJs - v1.3.0 - 2014-04-13
 * https://github.com/fizerkhan/atatusjs
 * Copyright (c) 2014 Atatus; Licensed MIT */
 // UAParser.js v0.6.2
