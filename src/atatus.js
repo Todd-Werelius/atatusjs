@@ -337,7 +337,7 @@
     }
     log('Sending exception data to Atatus:', data);
     var url = _atatusApiUrl + '/api/entries?apikey=' + encodeURIComponent(_atatusApiKey);
-    makeCorsRequest(url, JSON.stringify(data));
+    makePostCorsRequest(url, JSON.stringify(data));
   }
 
   // Create the XHR object.
