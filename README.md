@@ -29,6 +29,10 @@ catch(e) {
 }
 ```
 
+In order to get stack traces, you need to wrap your code in a try/catch block like above. Otherwise the error hits ```window.onerror``` handler and will only contain the error message, line number, and column number.
+
+You also need to throw errors with ```throw new Error('foo')``` instead of ```throw 'foo'```.
+
 To automatically catch and send unhandled errors, attach the window.onerror handler call:
 
 ```html
@@ -44,14 +48,60 @@ If you need to detach it (this will disable automatic unhandled error sending):
 Atatus.detach();
 ```
 
+If you are serving your site over HTTP and want IE8 to be able to submit JavaScript
+errors then you will need to set the following setting which will allow IE8 to
+submit the error over HTTP. Otherwise the provider will only submit over HTTPS
+which IE8 will not allow while being served over HTTP.
+
+```javascript
+Atatus.init('yourApiKey', { allowInsecureSubmissions: true });
+```
+
 ## Documentation
 
 ### Sending custom data
 
-Custom data variables can be placed in an array passed in as the third parameter in the init() call. For instance:
+**On initialization:**
+
+Custom data variables (objects, arrays etc) can be added by calling the
+withCustomData function on the Atatus object:
 
 ```javascript
-Atatus.init('{{your_api_key}}', null, ['the user name']).attach();
+Atatus.init('{{your_api_key}}').attach().withCustomData({ foo: 'bar' });
+```
+
+They can also be passed in as the third parameter in the init() call, for instance:
+
+```javascript
+Atatus.init('{{your_api_key}}', null, { enviroment: 'production' }).attach();
+```
+
+**During a Send:**
+
+You can also pass custom data with manual send calls, with the second parameter.
+This lets you add variables that are in scope or global when handled in
+catch blocks. For example:
+
+```javascript
+Atatus.send(err, [{customName: 'customData'}];
+```
+
+### Adding tags
+
+The Atatus dashboard can also display tags for errors. These are arrays of strings or Numbers. This is done similar to the above custom data, like so:
+
+**On initialization:**
+
+```javascript
+Atatus.init('{{your_api_key}}').attach().withTags(['tag1', 'tag2']);
+```
+
+**During a Send:**
+
+Pass tags in as the third parameter:
+
+```javascript
+Atatus.send(err, null, ['tag']];
 ```
 
 ### Unique user tracking
@@ -74,8 +124,40 @@ Atatus.setVersion('1.0.0.0');
 
 This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
 
+### Source maps support
+
+AtatusJS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Atatus dashboard or documentation for more information.
+
+### Offline saving
+
+The provider has a feature where if errors are caught when there is no network activity they can be saved (in Local Storage). When an error arrives and connectivity is regained, previously saved errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
+
+#### Options
+
+Offline saving is **disabled by default.** To get or set this option, call the following after your init() call:
+
+```js
+Atatus.saveIfOffline(boolean)
+```
+
+If an error is caught and no network connectivity is available (the Atatus API cannot be reached), or if the request times out after 10s, the error will be saved to LocalStorage. This is confirmed to work on Chrome, Firefox, IE10/11, Opera and WinJS.
+
+Limited support is available for IE 8 and 9 - errors will only be saved if the request times out.
+
 ## Release History
 
+- 1.8.1 - Added meaningful message for Ajax errors, fixed debugmode logging bug
+- 1.8.0 - Add Offline Saving feature; add support for WinJS
+- 1.7.2 - Fixed tags not being included when error caught from global window.onerror handler
+- 1.7.1 - Fixed broken withTags when no other custom data provided on Send
+- 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
+- 1.6.1 - Fixed an issue with not supplying options to processUnhandledException
+- 1.6.0 - Added support for attaching Tags, added NuGet package
+- 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
+- 1.5.1 - Capture data submitted by jQuery AJAX calls
+- 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
+- 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery
+- 1.4.0 - AJAX errors will display status code instead of script error
 - 1.3.3 - Fixed regression where send()) would no longer attach a custom data object parameter
 - 1.3.2 - Fixed the need to call attach() (if only using manual sending)
 - 1.3.1 - Added user tracking and version tracking functionality
